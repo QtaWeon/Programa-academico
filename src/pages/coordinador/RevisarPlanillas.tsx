@@ -104,7 +104,7 @@ const RevisarPlanillas = () => {
     return (
       <Card key={planilla.id} className={isEditRequest ? 'border-amber-200 bg-amber-50/30' : ''}>
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <p className="font-semibold">{planilla.subjectName}</p>
               <p className="text-xs text-muted-foreground">
@@ -121,7 +121,7 @@ const RevisarPlanillas = () => {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setViewPlanilla(planilla)}>
                 <Eye className="h-4 w-4 mr-1" /> Ver
               </Button>
@@ -219,7 +219,7 @@ const RevisarPlanillas = () => {
           </DialogHeader>
           {viewPlanilla && (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm border">
+              <table className="w-full text-sm border min-w-[600px]">
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="py-2 px-2 border-r text-center">N°</th>

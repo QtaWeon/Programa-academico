@@ -77,7 +77,7 @@ const MisPlanillas = () => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Layers className="h-6 w-6 text-primary" />
           <div>
@@ -172,14 +172,14 @@ const MisPlanillas = () => {
         return (
           <Card key={planilla.id}>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
                 <div>
                   <h4 className="font-semibold">{planilla.subjectName}</h4>
                   <p className="text-xs text-muted-foreground">
                     Prof. {planilla.teacherName} · TP máx: {totalMax} pts
                   </p>
                 </div>
-                <div className="flex flex-col items-end gap-1">
+                <div className="flex flex-col items-start sm:items-end gap-1">
                   <Badge className="bg-green-500/20 text-green-700 border-green-300">Publicado</Badge>
                   {!myClaim && canClaim && (
                     <Button variant="outline" size="sm" className="h-6 text-xs mt-1 border-yellow-300 text-yellow-700 bg-yellow-50 hover:bg-yellow-100" onClick={() => { setClaimDialogPlanilla(planilla); setClaimText(''); }}>
@@ -216,12 +216,14 @@ const MisPlanillas = () => {
               </div>
 
               {/* Total score + progress bar */}
-              <div className="flex items-center gap-4">
-                <div className={`text-3xl font-bold ${colorClass}`}>
-                  {myTotal}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div className={`text-3xl font-bold ${colorClass}`}>
+                    {myTotal}
+                  </div>
+                  <div className="text-sm text-muted-foreground">/ {totalMax} puntos</div>
                 </div>
-                <div className="text-sm text-muted-foreground">/ {totalMax} puntos</div>
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${barClass}`}
@@ -233,7 +235,7 @@ const MisPlanillas = () => {
                   </p>
                 </div>
                 {pct < 0.5 && (
-                  <div className="flex w-full items-center gap-1 text-xs text-red-600 mt-2 bg-red-50 p-2 rounded">
+                  <div className="flex w-full sm:w-auto items-center gap-1 text-xs text-red-600 mt-2 sm:mt-0 bg-red-50 p-2 rounded">
                     <AlertTriangle className="h-3 w-3" /> Leyenda: Consulte con un profesor.
                   </div>
                 )}

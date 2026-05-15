@@ -151,7 +151,7 @@ const GestionCuentas = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <UserPlus className="h-6 w-6 text-primary" />
           <div>
@@ -191,7 +191,7 @@ const GestionCuentas = () => {
       <div className="space-y-3 mt-4">
         {filterByView(activeTab).map(account => (
           <Card key={account.id}>
-            <CardContent className="p-4 flex items-center justify-between">
+            <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-muted">
                   {roleIcon(account.role)}
@@ -204,7 +204,7 @@ const GestionCuentas = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {account.role === 'alumno' && account.grade === '3° Año' && account.status === 'activo' && (
                   <Button variant="outline" size="sm" onClick={() => handlePromoteToEgresado(account)} className="border-green-500 text-green-700 hover:bg-green-50">
                     <GraduationCap className="h-4 w-4 mr-1" /> Graduar

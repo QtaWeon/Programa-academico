@@ -540,7 +540,7 @@ const PlanillaMensual = () => {
               ) : (
                 <Card>
                   <CardContent className="p-0 overflow-x-auto">
-                    <div className="text-center py-3 border-b border-border px-4 flex justify-between items-center">
+                    <div className="py-3 border-b border-border px-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div>
                         <h3 className="font-bold text-lg text-left">Planilla de Informe Mensual - {subject.name}</h3>
                         <p className="font-semibold text-primary text-left">{monthName} de {CURRENT_YEAR}</p>
@@ -675,7 +675,7 @@ const PlanillaMensual = () => {
 
             return (
               <Card key={planilla.id}>
-                <CardContent className="p-4 flex items-center justify-between">
+                <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <p className="font-medium">{planilla.subjectName}</p>
                     <p className="text-xs text-muted-foreground">
@@ -685,7 +685,7 @@ const PlanillaMensual = () => {
                       <p className="text-xs text-destructive mt-1">Motivo rechazo: {planilla.rejectionReason}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {statusBadge(planilla.status)}
                     {(planilla.status === 'borrador' || planilla.status === 'rechazado') && (
                       <>

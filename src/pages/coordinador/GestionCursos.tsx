@@ -281,9 +281,9 @@ const GestionCursos = () => {
           return (
           <Card key={course.id}>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <CardTitle className="text-lg">{course.name}</CardTitle>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Badge variant="secondary">{course.grade}</Badge>
                   <Badge variant="outline" className="text-muted-foreground">{course.year}</Badge>
                   {course.grade === '3° Año' && course.students.length > 0 && (
@@ -296,7 +296,7 @@ const GestionCursos = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
                   <span className="text-sm font-medium flex items-center gap-1">
                     <Shield className="h-4 w-4" /> Coordinador
                   </span>
@@ -319,7 +319,7 @@ const GestionCursos = () => {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
                   <span className="text-sm font-medium flex items-center gap-1">
                     <Users className="h-4 w-4" /> Alumnos ({course.students.length})
                   </span>
@@ -347,7 +347,7 @@ const GestionCursos = () => {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
                   <span className="text-sm font-medium flex items-center gap-1">
                     <BookOpen className="h-4 w-4" /> Profesores ({teacherAssignments.length + legacyTeacherIds.length})
                   </span>
