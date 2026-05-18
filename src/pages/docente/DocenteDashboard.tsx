@@ -11,14 +11,21 @@ const DocenteDashboard = () => {
 
   useEffect(() => {
     fetchCourses(true);
-    fetchPlanillas(true);
+    fetchPlanillas(true).then(() => {
+      // Descongelar la planilla anterior en la base de datos
+      const store = usePlanillasStore.getState();
+      store.planillas.forEach(p => {
+        if (p.teacherId === user?.id && p.editRequestStatus === 'approved') {
+          store.updatePlanilla(p.id, { editRequestStatus: 'none' });
+        }
+      });
+    });
   }, []);
 
   const totalCursosAsignados = courses.reduce((count, course) => {
-    return count + course.subjects.filter(sub => sub.teacherId === user?.id).length;
+    const assignments = course.teacherAssignments?.filter(a => a.teacherId === user?.id) || [];
+    return count + assignments.length;
   }, 0);
-
-  const planillasCreadas = planillas.filter(p => p.teacherId === user?.id).length;
 
   return (
     <div className="space-y-6">

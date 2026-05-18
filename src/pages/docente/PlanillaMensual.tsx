@@ -301,9 +301,7 @@ const PlanillaMensual = () => {
           courseId: subject.courseId,
           courseName: subject.courseName,
           coordinatorId: courseCoordinatorId,
-          status: (existingPlanilla.status === 'aprobado' || existingPlanilla.status === 'enviado') 
-            ? existingPlanilla.status 
-            : 'borrador',
+          status: 'borrador',
           rejectionReason: undefined,
           editRequestStatus: existingPlanilla.editRequestStatus,
         });
@@ -384,6 +382,21 @@ const PlanillaMensual = () => {
       toast({ title: 'Planilla enviada', description: 'Planilla enviada al Coordinador para aprobación' });
     } catch {
       toast({ title: 'Error', description: 'No se pudo enviar la planilla', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCloseEdit = async () => {
+    if (!existingPlanilla || submitting) return;
+    setSubmitting(true);
+    try {
+      await updatePlanilla(existingPlanilla.id, {
+        editRequestStatus: 'none',
+      });
+      toast({ title: 'Edición finalizada', description: 'Has finalizado la edición de esta planilla.' });
+    } catch {
+      toast({ title: 'Error', variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -645,6 +658,11 @@ const PlanillaMensual = () => {
                           <Send className="h-4 w-4 mr-2" />{submitting ? 'Enviando...' : 'Enviar al Coordinador'}
                         </Button>
                       </>
+                    )}
+                    {existingPlanilla?.editRequestStatus === 'approved' && (
+                      <Button variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-200" onClick={handleCloseEdit} disabled={loading || submitting}>
+                        <CheckCircle className="h-4 w-4 mr-2" /> Finalizar Edición
+                      </Button>
                     )}
                     {isLocked && !hasPendingRequest && existingPlanilla?.editRequestStatus !== 'approved' && (
                       <Button variant="secondary" onClick={() => setRequestDialogOpen(true)}>
