@@ -11,15 +11,7 @@ const DocenteDashboard = () => {
 
   useEffect(() => {
     fetchCourses(true);
-    fetchPlanillas(true).then(() => {
-      // Descongelar la planilla anterior en la base de datos
-      const store = usePlanillasStore.getState();
-      store.planillas.forEach(p => {
-        if (p.teacherId === user?.id && p.editRequestStatus === 'approved') {
-          store.updatePlanilla(p.id, { editRequestStatus: 'none' });
-        }
-      });
-    });
+    fetchPlanillas(true);
   }, []);
 
   const totalCursosAsignados = courses.reduce((count, course) => {
