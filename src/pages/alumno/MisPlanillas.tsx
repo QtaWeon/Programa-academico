@@ -80,7 +80,7 @@ const MisPlanillas = () => {
 
     if (taskFilter === 'todas') return true;
     if (taskFilter === 'tp') return p.planillaType === 'tp';
-    if (taskFilter === 'examen') return p.planillaType === 'examen';
+    if (taskFilter === 'examen') return p.planillaType === 'examen' || p.planillaType === 'parcial';
     if (taskFilter === 'tareas') return p.planillaType === 'proceso' || !p.planillaType;
     return true;
   });
@@ -103,9 +103,12 @@ const MisPlanillas = () => {
     const myClaim = planilla.claims?.find(c => c.studentId === STUDENT_ID);
 
     const isInst = planilla.planillaType === 'institucional';
+    const isParcial = planilla.planillaType === 'parcial';
+    const isExamen = planilla.planillaType === 'examen';
     const instMonthLabel = isInst
       ? (ALL_MONTHS.find(m => m.month === planilla.month)?.name || `Mes ${planilla.month}`)
       : null;
+    const examLabel = isParcial ? 'Parcial' : isExamen ? 'Examen Final' : null;
 
     return (
       <Card key={planilla.id} className={isInst ? 'border-primary/30 bg-primary/5' : ''}>
@@ -117,6 +120,11 @@ const MisPlanillas = () => {
                 {isInst && (
                   <Badge variant="outline" className="text-xs">
                     {instMonthLabel}
+                  </Badge>
+                )}
+                {examLabel && (
+                  <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                    {examLabel}
                   </Badge>
                 )}
               </h4>

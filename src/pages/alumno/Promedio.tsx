@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { usePlanillasStore } from '@/lib/planillas-store';
 import { useAppStore } from '@/lib/store';
 import { useCoursesStore } from '@/lib/courses-store';
@@ -162,7 +162,7 @@ const Promedio = () => {
          p.scores.some(s => s.studentId === STUDENT_ID)
   );
 
-  const buildStats = (monthFilter: number[]) => {
+  const buildStats = useCallback((monthFilter: number[]) => {
     const stats: Record<string, SubjectEtapaStat> = {};
     approvedPlanillas
       .filter(p => monthFilter.includes(p.month))
@@ -189,13 +189,13 @@ const Promedio = () => {
         stats[key].totalMaxPoints += maxTotal;
       });
     return Object.values(stats).sort((a, b) => a.subjectName.localeCompare(b.subjectName));
-  };
+  }, [approvedPlanillas, STUDENT_ID]);
 
-  const etapa1Stats = useMemo(() => buildStats(ETAPA_1_MONTHS), [approvedPlanillas, STUDENT_ID]);
-  const etapa2Stats = useMemo(() => buildStats(ETAPA_2_MONTHS), [approvedPlanillas, STUDENT_ID]);
+  const etapa1Stats = useMemo(() => buildStats(ETAPA_1_MONTHS), [buildStats]);
+  const etapa2Stats = useMemo(() => buildStats(ETAPA_2_MONTHS), [buildStats]);
 
   // Final average: average of all per-subject grades across both etapas combined
-  const allStats = useMemo(() => buildStats([...ETAPA_1_MONTHS, ...ETAPA_2_MONTHS]), [approvedPlanillas, STUDENT_ID]);
+  const allStats = useMemo(() => buildStats([...ETAPA_1_MONTHS, ...ETAPA_2_MONTHS]), [buildStats]);
   const finalGrades = allStats.map(subj => {
     const pct = subj.totalMaxPoints > 0 ? (subj.totalStudentPoints / subj.totalMaxPoints) * 100 : 0;
     return calculateGrade(pct);
