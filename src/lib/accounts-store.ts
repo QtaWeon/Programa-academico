@@ -190,7 +190,17 @@ export const useAccountsStore = create<AccountsState>((set, get) => ({
 
   getByRole: (role) => get().accounts.filter(a => a.role === role),
   
-  getByEmail: (email) => get().accounts.find(a => a.email.toLowerCase() === email.toLowerCase()),
+  getByEmail: (email) => {
+    const normalize = (emailStr: string) => {
+      const parts = emailStr.toLowerCase().split('@');
+      if (parts.length === 2) {
+        return `${parts[0].replace(/\./g, '')}@${parts[1]}`;
+      }
+      return emailStr.toLowerCase();
+    };
+    const searchNorm = normalize(email);
+    return get().accounts.find(a => normalize(a.email) === searchNorm);
+  },
   
   getStudents: () => get().accounts.filter(a => a.role === 'alumno'),
   

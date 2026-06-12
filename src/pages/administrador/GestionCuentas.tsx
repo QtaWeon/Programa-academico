@@ -11,17 +11,20 @@ import { UserPlus, Users, BookOpen, GraduationCap, Trash2, Shield } from 'lucide
 import { useToast } from '@/hooks/use-toast';
 import { useAccountsStore, Account } from '@/lib/accounts-store';
 import { usePlanillasStore } from '@/lib/planillas-store';
+import { useCoursesStore } from '@/lib/courses-store';
 import { toPascalCase } from '@/lib/utils';
 
 const GestionCuentas = () => {
   const { toast } = useToast();
   const { accounts, loading, fetchAccounts, createAccount, updateAccount, deleteAccount: removeAccount } = useAccountsStore();
   const { planillas, fetchPlanillas } = usePlanillasStore();
+  const { courses, fetchCourses, updateCourse } = useCoursesStore();
 
   useEffect(() => { 
     fetchAccounts(true); 
     fetchPlanillas(true);
-  }, []);
+    fetchCourses(true);
+  }, [fetchAccounts, fetchPlanillas, fetchCourses]);
 
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'alumno';
@@ -103,6 +106,13 @@ const GestionCuentas = () => {
       await updateAccount(account.id, {
         status: 'egresado',
       });
+      // Remove student from any courses
+      const studentCourses = courses.filter(c => c.students.includes(account.id));
+      for (const course of studentCourses) {
+        await updateCourse(course.id, {
+          students: course.students.filter(sid => sid !== account.id)
+        });
+      }
       toast({ title: 'Alumno promovido a Egresado con éxito.' });
     } catch {
       toast({ title: 'Error', variant: 'destructive' });

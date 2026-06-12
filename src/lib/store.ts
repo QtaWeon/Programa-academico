@@ -23,6 +23,7 @@ interface AppState {
   setUser: (user: User) => void;
   setLoading: (loading: boolean) => void;
   login: (email: string, password: string) => Promise<boolean>;
+  loginAsUser: (userId: string) => Promise<boolean>;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -75,6 +76,44 @@ export const useAppStore = create<AppState>((set) => ({
       return false;
     } catch (error) {
       console.error('Login error:', error);
+      set({ isLoading: false });
+      return false;
+    }
+  },
+  loginAsUser: async (userId: string) => {
+    set({ isLoading: true });
+    try {
+      const accountsStore = useAccountsStore.getState();
+      if (!accountsStore.loaded) {
+        await accountsStore.fetchAccounts();
+      }
+
+      const account = accountsStore.accounts.find(a => a.id === userId);
+      if (account && account.status === 'activo') {
+        const normalizedRole = account.role;
+        const userName = account.firstName && account.lastName 
+          ? `${account.firstName} ${account.lastName}` 
+          : account.email;
+
+        const user: User = {
+          id: account.id,
+          name: userName,
+          email: account.email,
+          role: normalizedRole as UserRole,
+          grade: account.grade,
+        };
+        set({
+          user,
+          currentRole: normalizedRole as UserRole,
+          currentUserId: account.id,
+          isLoading: false,
+        });
+        return true;
+      }
+      set({ isLoading: false });
+      return false;
+    } catch (error) {
+      console.error('Auto login error:', error);
       set({ isLoading: false });
       return false;
     }

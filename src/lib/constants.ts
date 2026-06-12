@@ -3,11 +3,11 @@ export const MONTHS_ETAPA_1 = [
   { month: 3, name: 'Marzo' },
   { month: 4, name: 'Abril' },
   { month: 5, name: 'Mayo' },
-  { month: 6, name: 'Junio' },
-  { month: 7, name: 'Julio' },
 ];
 
 export const MONTHS_ETAPA_2 = [
+  { month: 6, name: 'Junio' },
+  { month: 7, name: 'Julio' },
   { month: 8, name: 'Agosto' },
   { month: 9, name: 'Septiembre' },
   { month: 10, name: 'Octubre' },

@@ -13,7 +13,7 @@ const AlumnoDashboard = () => {
 
   useEffect(() => {
     fetchPlanillas(true);
-  }, []);
+  }, [fetchPlanillas]);
 
   const treintaDiasAtras = new Date();
   treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);

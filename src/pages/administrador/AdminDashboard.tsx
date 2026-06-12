@@ -20,7 +20,7 @@ const AdminDashboard = () => {
     fetchAccounts(true);
     fetchCourses(true);
     fetchPlanillas(true);
-  }, []);
+  }, [fetchAccounts, fetchCourses, fetchPlanillas]);
 
   const totalAlumnos = accounts.filter(a => a.role === 'alumno' && a.status === 'activo').length;
   const totalDocentes = accounts.filter(a => a.role === 'docente' && a.status === 'activo').length;

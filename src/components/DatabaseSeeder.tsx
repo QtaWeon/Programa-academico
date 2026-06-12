@@ -51,6 +51,7 @@ const DatabaseSeeder = () => {
         { id: 'alum2', firstName: 'LUIS', lastName: 'ESTUDIANTE', ci: '66666', email: '66666@cpcc.com', role: 'alumno', grade: '3° Año', status: 'activo' },
         { id: 'alum3', firstName: 'SOFIA', lastName: 'GARCIA', ci: '77777', email: '77777@cpcc.com', role: 'alumno', grade: '1° Año', status: 'activo' },
         { id: 'alum4', firstName: 'CARLOS', lastName: 'LOPEZ', ci: '88888', email: '88888@cpcc.com', role: 'alumno', grade: '1° Año', status: 'activo' },
+        { id: 'ximena', firstName: 'XIMENA', lastName: 'PORTILLO', ci: '5432109', email: 'ximenaportillo@cpcc.com', role: 'alumno', grade: '3° Año', status: 'activo' },
       ];
 
       const extraAlumnos = Array.from({ length: 25 }).map((_, i) => ({
@@ -83,7 +84,7 @@ const DatabaseSeeder = () => {
           grade: '3° Año',
           year: 2026,
           coordinatorId: 'coord1',
-          students: ['alum1', 'alum2', ...alum3],
+          students: ['alum1', 'alum2', 'ximena', ...alum3],
           teachers: ['prof1'],
           subjects: ['Matemática', 'Programación'],
           teacherAssignments: [
@@ -148,7 +149,8 @@ const DatabaseSeeder = () => {
         ],
         scores: [
           { studentId: 'alum1', scores: { 't1': 5, 't2': 28 } },
-          { studentId: 'alum2', scores: { 't1': 4, 't2': 25 } }
+          { studentId: 'alum2', scores: { 't1': 4, 't2': 25 } },
+          { studentId: 'ximena', scores: { 't1': 5, 't2': 29 } }
         ],
         claims: [
           {

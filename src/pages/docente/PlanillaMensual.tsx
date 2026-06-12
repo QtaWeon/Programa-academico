@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -67,35 +67,45 @@ const PlanillaMensual = () => {
 
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('3');
+  const [selectedPlanillaType, setSelectedPlanillaType] = useState<'proceso' | 'tp' | 'examen' | 'institucional'>('proceso');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeTab = searchParams.get('tab') || 'crear';
+
 
   useEffect(() => {
     if (teacherSubjects.length > 0 && !selectedSubjectId) {
       setSelectedSubjectId(teacherSubjects[0].subjectId);
     }
-  }, [teacherSubjects.length, selectedSubjectId]);
+  }, [teacherSubjects, selectedSubjectId]);
 
   const subject = teacherSubjects.find(s => s.subjectId === selectedSubjectId);
   const month = parseInt(selectedMonth);
   const monthName = ALL_MONTHS.find(m => m.month === month)?.name || '';
   const selectedCourse = courses.find(course => course.id === subject?.courseId);
   const courseCoordinatorId = selectedCourse?.coordinatorId;
-  const students = selectedCourse
-    ? accounts
-        .filter(account => selectedCourse.students.includes(account.id) && account.role === 'alumno' && account.status === 'activo')
-        .sort((a, b) => a.lastName.localeCompare(b.lastName))
-    : [];
 
-  const generateDefaultTasks = (hours: number, targetMonth: number): TaskRow[] => {
+
+  const generateDefaultTasks = useCallback((hours: number, targetMonth: number, type: 'proceso' | 'tp' | 'examen' | 'institucional'): TaskRow[] => {
+    if (type === 'tp') {
+      return [{ id: `task-tp-${Date.now()}`, name: 'Trabajo Práctico', maxPoints: 10 }];
+    }
+    if (type === 'examen') {
+      return [{ id: `task-exam-${Date.now()}`, name: 'Examen Parcial/Final', maxPoints: 20 }];
+    }
+    if (type === 'institucional') {
+      return [{ id: `task-inst-${Date.now()}`, name: 'Institucional', maxPoints: 10 }];
+    }
+
     const baseTasks = Array.from({ length: hours }, (_, index) => ({
       id: `task-${index + 1}`,
       name: `Tarea ${index + 1}`,
       maxPoints: 2,
     }));
-    
-    if (targetMonth === 5 || targetMonth === 11) {
+
+    // Add special institutional tasks only for coordinators and in final months of each stage
+    const { currentRole } = useAppStore.getState();
+    if (currentRole === 'coordinador' && (targetMonth === 5 || targetMonth === 11)) {
       baseTasks.push(
         { id: `task-clubes-${Math.random().toString(36).substr(2, 5)}`, name: 'Clubes', maxPoints: 2 },
         { id: `task-asistencia-${Math.random().toString(36).substr(2, 5)}`, name: 'Asistencia', maxPoints: 1 },
@@ -103,23 +113,24 @@ const PlanillaMensual = () => {
       );
     }
     return baseTasks;
-  };
+  }, []);
 
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [scores, setScores] = useState<Record<string, Record<string, number>>>({});
 
+
   useEffect(() => {
     if (subject) {
-      setTasks(generateDefaultTasks(subject.hoursPerWeek || 4, month));
+      setTasks(generateDefaultTasks(subject.hoursPerWeek || 4, month, selectedPlanillaType));
       setScores({});
     }
-  }, [selectedSubjectId, month]);
+  }, [selectedSubjectId, month, generateDefaultTasks, subject, selectedPlanillaType]);
 
   const totalMaxPoints = tasks.reduce((sum, task) => sum + task.maxPoints, 0);
 
   const getScore = (studentId: string, taskId: string): number => scores[studentId]?.[taskId] || 0;
 
-  const setScore = (studentId: string, taskId: string, value: string, max: number) => {
+  const setScore = useCallback((studentId: string, taskId: string, value: string, max: number) => {
     const num = parseInt(value);
     const newVal = value === '' ? 0 : (num >= 0 && num <= max ? num : undefined);
     if (newVal === undefined) return;
@@ -128,7 +139,7 @@ const PlanillaMensual = () => {
       ...prev,
       [studentId]: { ...prev[studentId], [taskId]: newVal },
     }));
-  };
+  }, []);
 
   const getStudentTotal = (studentId: string): number =>
     tasks.reduce((sum, task) => sum + getScore(studentId, task.id), 0);
@@ -159,7 +170,7 @@ const PlanillaMensual = () => {
   const handleResolveClaim = async () => {
     if (!selectedClaim || !existingPlanilla) return;
     try {
-      const nextClaims = (existingPlanilla.claims || []).map(c => 
+      const nextClaims = (existingPlanilla.claims || []).map(c =>
         c.id === selectedClaim.id ? { ...c, resolved: true, teacherMessage: teacherReply, teacherDate: new Date().toISOString() } : c
       );
       await updatePlanilla(existingPlanilla.id, { claims: nextClaims });
@@ -184,13 +195,27 @@ const PlanillaMensual = () => {
   };
 
   const existingPlanilla = planillas.find(
-    planilla => planilla.subjectId === selectedSubjectId && planilla.month === month && planilla.year === CURRENT_YEAR && planilla.teacherId === TEACHER_ID
+    planilla => planilla.subjectId === selectedSubjectId &&
+               planilla.month === month &&
+               planilla.year === CURRENT_YEAR &&
+               planilla.teacherId === TEACHER_ID &&
+               (planilla.planillaType === selectedPlanillaType || (!planilla.planillaType && selectedPlanillaType === 'proceso'))
   );
 
+  const students = selectedCourse
+    ? accounts
+      .filter(account => {
+        const isInCourse = selectedCourse.students.includes(account.id) && account.status === 'activo';
+        const hasScoreInExisting = existingPlanilla?.scores.some(s => s.studentId === account.id);
+        return account.role === 'alumno' && (isInCourse || hasScoreInExisting);
+      })
+      .sort((a, b) => a.lastName.localeCompare(b.lastName))
+    : [];
+
   const canEdit = !existingPlanilla ||
-                  existingPlanilla.status === 'borrador' ||
-                  existingPlanilla.status === 'rechazado' ||
-                  existingPlanilla.editRequestStatus === 'approved';
+    existingPlanilla.status === 'borrador' ||
+    existingPlanilla.status === 'rechazado' ||
+    existingPlanilla.editRequestStatus === 'approved';
 
   const handleRequestEdit = async () => {
     if (!existingPlanilla || !requestReason.trim()) return;
@@ -301,6 +326,7 @@ const PlanillaMensual = () => {
           courseId: subject.courseId,
           courseName: subject.courseName,
           coordinatorId: courseCoordinatorId,
+          planillaType: selectedPlanillaType,
           status: 'borrador',
           rejectionReason: undefined,
           editRequestStatus: existingPlanilla.editRequestStatus,
@@ -317,7 +343,8 @@ const PlanillaMensual = () => {
           grade: subject.grade,
           month,
           year: CURRENT_YEAR,
-          etapa: month <= 7 ? 1 : 2,
+          etapa: month <= 5 ? 1 : 2,
+          planillaType: selectedPlanillaType,
           tasks,
           scores: planillaScores,
           status: 'borrador',
@@ -354,6 +381,7 @@ const PlanillaMensual = () => {
           courseId: subject.courseId,
           courseName: subject.courseName,
           coordinatorId: courseCoordinatorId,
+          planillaType: selectedPlanillaType,
           status: 'enviado',
           submittedDate: new Date().toISOString(),
           rejectionReason: undefined,
@@ -371,7 +399,8 @@ const PlanillaMensual = () => {
           grade: subject.grade,
           month,
           year: CURRENT_YEAR,
-          etapa: month <= 7 ? 1 : 2,
+          etapa: month <= 5 ? 1 : 2,
+          planillaType: selectedPlanillaType,
           tasks,
           scores: planillaScores,
           status: 'enviado',
@@ -412,10 +441,10 @@ const PlanillaMensual = () => {
       setScores(scoresMap);
     } else if (subject) {
       // Reset to default tasks and empty scores if no draft exists for this month/subject
-      setTasks(generateDefaultTasks(subject.hoursPerWeek || 4, month));
+      setTasks(generateDefaultTasks(subject.hoursPerWeek || 4, month, selectedPlanillaType));
       setScores({});
     }
-  }, [existingPlanilla?.id, selectedSubjectId, selectedMonth]);
+  }, [existingPlanilla, subject, generateDefaultTasks, month, selectedSubjectId, selectedMonth, selectedPlanillaType]);
 
   const handleDeletePlanilla = async (id: string) => {
     try {
@@ -488,6 +517,19 @@ const PlanillaMensual = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-1">
+              <Label>Tipo de Planilla</Label>
+              <Select value={selectedPlanillaType} onValueChange={(val: any) => setSelectedPlanillaType(val)}>
+                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="proceso">Tareas (Proceso)</SelectItem>
+                  <SelectItem value="tp">Trabajo Práctico</SelectItem>
+                  <SelectItem value="examen">Examen</SelectItem>
+                  <SelectItem value="institucional">Institucional</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {existingPlanilla && (
@@ -512,40 +554,36 @@ const PlanillaMensual = () => {
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium">Tareas del mes:</span>
-                  {tasks.map(task => {
-                    const isSpecial = task.id.startsWith('task-clubes') || task.id.startsWith('task-asistencia') || task.id.startsWith('task-puntualidad');
-                    return (
-                      <Badge key={task.id} variant="outline" className="gap-1 pr-1">
-                        {task.name} ({task.maxPoints}pts)
-                        {!isSpecial && canEdit && (
-                          <button onClick={() => startEditTask(task)} className="ml-1 hover:text-primary">
-                            <Edit2 className="h-3 w-3" />
-                          </button>
-                        )}
-                        {!isSpecial && tasks.length > 1 && canEdit && (
-                          <button onClick={() => removeTask(task.id)} className="hover:text-destructive">
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        )}
-                      </Badge>
-                    );
-                  })}
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Button variant="outline" size="sm" onClick={addTask} disabled={!canEdit}>
-                      <Plus className="h-3 w-3 mr-1" /> Agregar Tarea
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => addSpecialTask('Trabajo Práctico', 5)} disabled={!canEdit}>
-                      <Plus className="h-3 w-3 mr-1" /> Añadir T.P.
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => addSpecialTask('Examen Parcial', 12)} disabled={!canEdit}>
-                      <Plus className="h-3 w-3 mr-1" /> Añadir Ex. Parcial
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => addSpecialTask('Examen', 30)} disabled={!canEdit}>
-                      <Plus className="h-3 w-3 mr-1" /> Añadir Examen
-                    </Button>
-                  </div>
-                </div>              {students.length === 0 ? (
+                <span className="text-sm font-medium">Tareas del mes:</span>
+                {tasks.map(task => {
+                  const isSpecial = task.id.startsWith('task-clubes') || task.id.startsWith('task-asistencia') || task.id.startsWith('task-puntualidad');
+                  return (
+                    <Badge key={task.id} variant="outline" className="gap-1 pr-1">
+                      {task.name} ({task.maxPoints}pts)
+                      {!isSpecial && canEdit && (
+                        <button onClick={() => startEditTask(task)} className="ml-1 hover:text-primary">
+                          <Edit2 className="h-3 w-3" />
+                        </button>
+                      )}
+                      {!isSpecial && tasks.length > 1 && canEdit && (
+                        <button onClick={() => removeTask(task.id)} className="hover:text-destructive">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  );
+                })}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Button variant="outline" size="sm" onClick={addTask} disabled={!canEdit}>Agregar Tarea</Button>
+                  {currentRole === 'coordinador' && (
+                    <>
+                      <Button variant="outline" size="sm" onClick={() => addSpecialTask('Trabajo Práctico', 5)} disabled={!canEdit}>Añadir T.P.</Button>
+                      <Button variant="outline" size="sm" onClick={() => addSpecialTask('Examen Parcial', 12)} disabled={!canEdit}>Añadir Ex. Parcial</Button>
+                      <Button variant="outline" size="sm" onClick={() => addSpecialTask('Examen', 30)} disabled={!canEdit}>Añadir Examen</Button>
+                    </>
+                  )}
+                </div>
+              </div>              {students.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8 border border-dashed rounded-lg">
                   <p>No hay alumnos asignados a este curso.</p>
                   <p className="text-xs mt-1">El Coordinador debe asignar alumnos desde Gestión de Cursos.</p>
@@ -628,9 +666,8 @@ const PlanillaMensual = () => {
                                   />
                                 </td>
                               ))}
-                              <td className={`text-center py-1 px-2 font-bold text-base ${
-                                pct >= 80 ? 'text-green-600' : pct >= 50 ? 'text-amber-600' : total > 0 ? 'text-red-600' : 'text-muted-foreground'
-                              }`}>
+                              <td className={`text-center py-1 px-2 font-bold text-base ${pct >= 80 ? 'text-green-600' : pct >= 50 ? 'text-amber-600' : total > 0 ? 'text-red-600' : 'text-muted-foreground'
+                                }`}>
                                 {total > 0 ? total : '-'}
                               </td>
                             </tr>
@@ -763,7 +800,7 @@ const PlanillaMensual = () => {
               <span className="font-semibold">{selectedClaim?.studentDate ? new Date(selectedClaim.studentDate).toLocaleDateString() : 'Sin fecha registrado'}</span>
               <p className="mt-1">{selectedClaim?.studentMessage}</p>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Respuesta del Profesor</Label>
               <textarea

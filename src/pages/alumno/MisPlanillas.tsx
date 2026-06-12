@@ -46,7 +46,7 @@ const MisPlanillas = () => {
   useEffect(() => {
     fetchPlanillas(true);
     fetchCourses(true);
-  }, []);
+  }, [fetchPlanillas, fetchCourses]);
 
   const STUDENT_ID = user?.id || '';
   const studentName = user?.name || '';
@@ -68,10 +68,7 @@ const MisPlanillas = () => {
       p.status === 'aprobado' &&
       p.month === month &&
       p.year === CURRENT_YEAR &&
-      p.scores.some(s => s.studentId === STUDENT_ID) &&
-      (studentCourse
-        ? p.courseId === studentCourse.id || p.grade === grade
-        : p.grade === grade)
+      p.scores.some(s => s.studentId === STUDENT_ID)
   );
 
   return (
@@ -121,14 +118,11 @@ const MisPlanillas = () => {
 
       {!loading && approvedPlanillas.length > 0 && approvedPlanillas.filter(p => {
         if (taskFilter === 'todas') return true;
-        return p.tasks.some(task => {
-          const name = task.name.toLowerCase();
-          if (taskFilter === 'tp') return name.includes('tp') || name.includes('trabajo') || name.includes('práctico') || name.includes('practico');
-          if (taskFilter === 'examen') return name.includes('examen') || name.includes('prueba');
-          if (taskFilter === 'tareas') return name.includes('tarea') || name.includes('ejercicio');
-          if (taskFilter === 'institucional') return name.includes('club') || name.includes('asistencia') || name.includes('puntualidad');
-          return true;
-        });
+        if (taskFilter === 'tp') return p.planillaType === 'tp';
+        if (taskFilter === 'examen') return p.planillaType === 'examen';
+        if (taskFilter === 'tareas') return p.planillaType === 'proceso' || !p.planillaType;
+        if (taskFilter === 'institucional') return p.planillaType === 'institucional';
+        return true;
       }).length === 0 && (
         <p className="text-center text-muted-foreground py-8">
           No hay actividades de este tipo para el mes seleccionado.
@@ -141,11 +135,10 @@ const MisPlanillas = () => {
 
         const filteredTasks = planilla.tasks.filter(task => {
           if (taskFilter === 'todas') return true;
-          const name = task.name.toLowerCase();
-          if (taskFilter === 'tp') return name.includes('tp') || name.includes('trabajo') || name.includes('práctico') || name.includes('practico');
-          if (taskFilter === 'examen') return name.includes('examen') || name.includes('prueba');
-          if (taskFilter === 'tareas') return name.includes('tarea') || name.includes('ejercicio');
-          if (taskFilter === 'institucional') return name.includes('club') || name.includes('asistencia') || name.includes('puntualidad');
+          if (taskFilter === 'tp') return planilla.planillaType === 'tp';
+          if (taskFilter === 'examen') return planilla.planillaType === 'examen';
+          if (taskFilter === 'tareas') return planilla.planillaType === 'proceso' || !planilla.planillaType;
+          if (taskFilter === 'institucional') return planilla.planillaType === 'institucional';
           return true;
         });
 

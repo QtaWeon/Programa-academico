@@ -12,7 +12,7 @@ const DocenteDashboard = () => {
   useEffect(() => {
     fetchCourses(true);
     fetchPlanillas(true);
-  }, []);
+  }, [fetchCourses, fetchPlanillas]);
 
   const totalCursosAsignados = courses.reduce((count, course) => {
     const assignments = course.teacherAssignments?.filter(a => a.teacherId === user?.id) || [];

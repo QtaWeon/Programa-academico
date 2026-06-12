@@ -21,7 +21,7 @@ const GestionCursos = () => {
   useEffect(() => {
     fetchAccounts(true);
     fetchCourses(true);
-  }, []);
+  }, [fetchAccounts, fetchCourses]);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newCourseName, setNewCourseName] = useState('');
@@ -60,7 +60,8 @@ const GestionCursos = () => {
 
 
 
-  const handleEgresarCurso = async (studentIds: string[]) => {
+  const handleEgresarCurso = async (course: Course) => {
+    const studentIds = course.students;
     if (!studentIds.length) {
       toast({ title: 'Sin alumnos', description: 'No hay alumnos para graduar en este curso.', variant: 'destructive' });
       return;
@@ -69,7 +70,11 @@ const GestionCursos = () => {
     
     try {
       await Promise.all(studentIds.map(id => updateAccount(id, { status: 'egresado' })));
+      await updateCourse(course.id, {
+        students: [],
+      });
       await fetchAccounts(true);
+      await fetchCourses(true);
       toast({ title: 'Curso Egresado', description: 'Todos los alumnos del curso fueron marcados como egresados exitosamente.' });
     } catch {
       toast({ title: 'Error', variant: 'destructive', description: 'Hubo un error al intentar egresar el curso.' });
@@ -287,7 +292,7 @@ const GestionCursos = () => {
                   <Badge variant="secondary">{course.grade}</Badge>
                   <Badge variant="outline" className="text-muted-foreground">{course.year}</Badge>
                   {course.grade === '3° Año' && course.students.length > 0 && (
-                    <Button variant="ghost" size="icon" className="hover:text-yellow-600 hover:bg-yellow-100" onClick={() => handleEgresarCurso(course.students)} title="Graduar Curso Completo">
+                    <Button variant="ghost" size="icon" className="hover:text-yellow-600 hover:bg-yellow-100" onClick={() => handleEgresarCurso(course)} title="Graduar Curso Completo">
                       <GraduationCap className="h-4 w-4" />
                     </Button>
                   )}

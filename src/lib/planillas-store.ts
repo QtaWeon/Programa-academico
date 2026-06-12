@@ -36,6 +36,7 @@ export interface Planilla {
   month: number;
   year: number;
   etapa: 1 | 2;
+  planillaType?: 'proceso' | 'tp' | 'examen' | 'institucional'; // tipo de planilla para filtros
   tasks: TaskRow[];
   scores: PlanillaScore[];
   status: 'borrador' | 'enviado' | 'aprobado' | 'rechazado';
