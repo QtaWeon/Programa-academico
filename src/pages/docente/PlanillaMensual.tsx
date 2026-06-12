@@ -504,11 +504,11 @@ const PlanillaMensual = () => {
 
       {activeTab === 'crear' && (
         <div className="space-y-6">
-          <div className="flex gap-4 flex-wrap">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-1">
               <Label>Materia / Curso</Label>
               <Select value={selectedSubjectId} onValueChange={setSelectedSubjectId}>
-                <SelectTrigger className="w-72"><SelectValue placeholder="Seleccionar materia" /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Seleccionar materia" /></SelectTrigger>
                 <SelectContent>
                   {teacherSubjects.map(teacherSubject => (
                     <SelectItem key={teacherSubject.subjectId} value={teacherSubject.subjectId}>
@@ -522,7 +522,7 @@ const PlanillaMensual = () => {
             <div className="space-y-1">
               <Label>Mes</Label>
               <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ALL_MONTHS.map(item => (
                     <SelectItem key={item.month} value={String(item.month)}>{item.name}</SelectItem>
@@ -531,10 +531,10 @@ const PlanillaMensual = () => {
               </Select>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 col-span-1 sm:col-span-2 md:col-span-1">
               <Label>Tipo de Planilla</Label>
               <Select value={selectedPlanillaType} onValueChange={(val: any) => setSelectedPlanillaType(val)}>
-                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="proceso">Tareas (Proceso)</SelectItem>
                   <SelectItem value="tp">Trabajo Práctico</SelectItem>

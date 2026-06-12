@@ -62,18 +62,18 @@ const EtapaTable = ({
       <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
         <CardTitle className="text-base font-bold">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="p-0 overflow-x-auto">
-        <table className="w-full text-sm">
+      <CardContent className="p-0 overflow-x-auto scrollbar-thin">
+        <table className="w-full text-xs sm:text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="text-left py-2 px-4 border-r border-border font-semibold min-w-[200px]">Materia</th>
+              <th className="text-left py-2 px-2 sm:px-4 border-r border-border font-semibold min-w-[150px] sm:min-w-[200px]">Materia</th>
               {etapaMonths.map(month => (
-                <th key={month} className="text-center py-2 px-2 border-r border-border font-medium w-14">
+                <th key={month} className="text-center py-2 px-1 border-r border-border font-medium w-10 sm:w-14">
                   {['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][month]}
                 </th>
               ))}
-              <th className="text-center py-2 px-3 border-r border-border font-bold bg-primary/5 w-20">Total</th>
-              <th className="text-center py-2 px-3 font-bold bg-primary/10 w-16">Nota</th>
+              <th className="text-center py-2 px-2 border-r border-border font-bold bg-primary/5 w-16 sm:w-20">Total</th>
+              <th className="text-center py-2 px-2 font-bold bg-primary/10 w-14 sm:w-16">Nota</th>
             </tr>
           </thead>
           <tbody>
@@ -82,18 +82,18 @@ const EtapaTable = ({
               const g = calculateGrade(pct);
               return (
                 <tr key={idx} className="border-b border-border hover:bg-muted/20">
-                  <td className="py-2 px-4 border-r border-border">
-                    <div className="font-medium">{subj.subjectName}</div>
-                    <div className="text-xs text-muted-foreground">Prof. {subj.teacherName}</div>
+                  <td className="py-2 px-2 sm:px-4 border-r border-border">
+                    <div className="font-medium text-xs sm:text-sm leading-tight">{subj.subjectName}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">Prof. {subj.teacherName}</div>
                   </td>
                   {etapaMonths.map(month => {
                     const d = subj.months[month];
                     return (
-                      <td key={month} className="text-center py-2 px-1 border-r border-border">
+                      <td key={month} className="text-center py-2 px-0.5 sm:px-1 border-r border-border">
                         {d ? (
-                          <div>
+                          <div className="flex flex-col sm:block">
                             <span className="font-semibold">{d.studentTotal}</span>
-                            <span className="text-[9px] text-muted-foreground">/{d.maxTotal}</span>
+                            <span className="text-[8px] sm:text-[9px] text-muted-foreground">/{d.maxTotal}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground/30">-</span>
@@ -101,11 +101,11 @@ const EtapaTable = ({
                       </td>
                     );
                   })}
-                  <td className="text-center py-2 px-3 border-r border-border bg-primary/5">
+                  <td className="text-center py-2 px-2 border-r border-border bg-primary/5">
                     <div className="font-bold">{subj.totalStudentPoints}</div>
-                    <div className="text-[10px] text-muted-foreground">/{subj.totalMaxPoints}</div>
+                    <div className="text-[9px] sm:text-[10px] text-muted-foreground">/{subj.totalMaxPoints}</div>
                   </td>
-                  <td className={`text-center py-2 px-3 font-bold text-lg bg-primary/10 ${g === 1 ? 'text-red-600' : g >= 4 ? 'text-green-600' : 'text-amber-600'}`}>
+                  <td className={`text-center py-2 px-2 font-bold text-base sm:text-lg bg-primary/10 ${g === 1 ? 'text-red-600' : g >= 4 ? 'text-green-600' : 'text-amber-600'}`}>
                     {subj.totalMaxPoints > 0 ? g : '-'}
                   </td>
                 </tr>
