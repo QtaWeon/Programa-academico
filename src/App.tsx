@@ -5,24 +5,26 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAppStore } from "@/lib/store";
 import { UserRole } from "@/lib/types";
+import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AppLayout from "./components/AppLayout";
 
-// Pages
-import AlumnoDashboard from "./pages/alumno/AlumnoDashboard";
-import MisPlanillas from "./pages/alumno/MisPlanillas";
-import Promedio from "./pages/alumno/Promedio";
+// Lazy-loaded Pages
+const AlumnoDashboard = lazy(() => import("./pages/alumno/AlumnoDashboard"));
+const MisPlanillas = lazy(() => import("./pages/alumno/MisPlanillas"));
+const Promedio = lazy(() => import("./pages/alumno/Promedio"));
 
-import DocenteDashboard from "./pages/docente/DocenteDashboard";
-import PlanillaMensual from "./pages/docente/PlanillaMensual";
+const DocenteDashboard = lazy(() => import("./pages/docente/DocenteDashboard"));
+const PlanillaMensual = lazy(() => import("./pages/docente/PlanillaMensual"));
 
-import CoordinadorDashboard from "./pages/coordinador/CoordinadorDashboard";
-import GestionCursos from "./pages/coordinador/GestionCursos";
-import RevisarPlanillas from "./pages/coordinador/RevisarPlanillas";
+const CoordinadorDashboard = lazy(() => import("./pages/coordinador/CoordinadorDashboard"));
+const GestionCursos = lazy(() => import("./pages/coordinador/GestionCursos"));
+const RevisarPlanillas = lazy(() => import("./pages/coordinador/RevisarPlanillas"));
 
-import AdminDashboard from "./pages/administrador/AdminDashboard";
-import GestionCuentas from "./pages/administrador/GestionCuentas";
+const AdminDashboard = lazy(() => import("./pages/administrador/AdminDashboard"));
+const GestionCuentas = lazy(() => import("./pages/administrador/GestionCuentas"));
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,13 @@ const roleHomePath: Record<UserRole, string> = {
   docente: "/docente",
   alumno: "/alumno",
 };
+
+const PageLoader = () => (
+  <div className="h-[50vh] flex flex-col items-center justify-center text-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary opacity-80" />
+    <p className="text-xs text-muted-foreground mt-2 animate-pulse">Cargando sección...</p>
+  </div>
+);
 
 const ProtectedRoutes = () => {
   const currentRole = useAppStore((s) => s.currentRole);
@@ -50,32 +59,33 @@ const ProtectedRoutes = () => {
 
   return (
     <AppLayout>
-      <Routes>
-        {/* Alumno */}
-        <Route path="/alumno" element={<AlumnoDashboard />} />
-        <Route path="/alumno/planillas" element={<MisPlanillas />} />
-        <Route path="/alumno/promedio" element={<Promedio />} />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Alumno */}
+          <Route path="/alumno" element={<AlumnoDashboard />} />
+          <Route path="/alumno/planillas" element={<MisPlanillas />} />
+          <Route path="/alumno/promedio" element={<Promedio />} />
 
-        {/* Profesor */}
-        <Route path="/docente" element={<DocenteDashboard />} />
-        <Route path="/docente/planillas" element={<PlanillaMensual />} />
+          {/* Profesor */}
+          <Route path="/docente" element={<DocenteDashboard />} />
+          <Route path="/docente/planillas" element={<PlanillaMensual />} />
 
-        {/* Coordinador - hereda planillas + gestión cursos */}
-        <Route path="/coordinador" element={<CoordinadorDashboard />} />
-        <Route path="/coordinador/planillas" element={<PlanillaMensual />} />
-        <Route path="/coordinador/revisar" element={<RevisarPlanillas />} />
-        <Route path="/coordinador/cursos" element={<GestionCursos />} />
+          {/* Coordinador - hereda planillas + gestión cursos */}
+          <Route path="/coordinador" element={<CoordinadorDashboard />} />
+          <Route path="/coordinador/planillas" element={<PlanillaMensual />} />
+          <Route path="/coordinador/revisar" element={<RevisarPlanillas />} />
+          <Route path="/coordinador/cursos" element={<GestionCursos />} />
 
-        {/* Administrador - hereda todo + gestión cuentas */}
-        <Route path="/administrador" element={<AdminDashboard />} />
-        <Route path="/administrador/planillas" element={<PlanillaMensual />} />
-        <Route path="/administrador/revisar" element={<RevisarPlanillas />} />
-        <Route path="/administrador/cursos" element={<GestionCursos />} />
-        <Route path="/administrador/cuentas" element={<GestionCuentas />} />
+          {/* Administrador - hereda todo + gestión cuentas */}
+          <Route path="/administrador" element={<AdminDashboard />} />
+          <Route path="/administrador/planillas" element={<PlanillaMensual />} />
+          <Route path="/administrador/revisar" element={<RevisarPlanillas />} />
+          <Route path="/administrador/cursos" element={<GestionCursos />} />
+          <Route path="/administrador/cuentas" element={<GestionCuentas />} />
 
-
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </AppLayout>
   );
 };
