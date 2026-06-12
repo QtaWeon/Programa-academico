@@ -167,17 +167,26 @@ const Promedio = () => {
     approvedPlanillas
       .filter(p => monthFilter.includes(p.month))
       .forEach(planilla => {
-        const { subjectId, subjectName, teacherName, month, tasks, scores } = planilla;
+        const { subjectName, teacherName, month, tasks, scores, planillaType } = planilla;
         const myScoreObj = scores.find(s => s.studentId === STUDENT_ID);
         if (!myScoreObj) return;
         const maxTotal = tasks.reduce((s, t) => s + t.maxPoints, 0);
         const studentTotal = tasks.reduce((s, t) => s + (myScoreObj.scores[t.id] || 0), 0);
-        if (!stats[subjectId]) {
-          stats[subjectId] = { subjectName, teacherName, months: {}, totalStudentPoints: 0, totalMaxPoints: 0 };
+        // Group all institutional planillas under a single virtual key
+        const key = planillaType === 'institucional' ? '__institucional__' : planilla.subjectId;
+        const displayName = planillaType === 'institucional' ? 'Institucional' : subjectName;
+        if (!stats[key]) {
+          stats[key] = { subjectName: displayName, teacherName, months: {}, totalStudentPoints: 0, totalMaxPoints: 0 };
         }
-        stats[subjectId].months[month] = { studentTotal, maxTotal };
-        stats[subjectId].totalStudentPoints += studentTotal;
-        stats[subjectId].totalMaxPoints += maxTotal;
+        // For institutional, accumulate across months into the same month bucket
+        if (stats[key].months[month]) {
+          stats[key].months[month].studentTotal += studentTotal;
+          stats[key].months[month].maxTotal += maxTotal;
+        } else {
+          stats[key].months[month] = { studentTotal, maxTotal };
+        }
+        stats[key].totalStudentPoints += studentTotal;
+        stats[key].totalMaxPoints += maxTotal;
       });
     return Object.values(stats).sort((a, b) => a.subjectName.localeCompare(b.subjectName));
   };

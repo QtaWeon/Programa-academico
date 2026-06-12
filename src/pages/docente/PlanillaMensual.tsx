@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Save, Send, Layers, Plus, Trash2, Edit2, FileText, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { usePlanillasStore, TaskRow, Planilla } from '@/lib/planillas-store';
+import { usePlanillasStore, TaskRow, Planilla, Claim } from '@/lib/planillas-store';
 import { useAppStore } from '@/lib/store';
 import { useAccountsStore } from '@/lib/accounts-store';
 import { useCoursesStore } from '@/lib/courses-store';
@@ -94,7 +94,11 @@ const PlanillaMensual = () => {
       return [{ id: `task-exam-${Date.now()}`, name: 'Examen Parcial/Final', maxPoints: 20 }];
     }
     if (type === 'institucional') {
-      return [{ id: `task-inst-${Date.now()}`, name: 'Institucional', maxPoints: 10 }];
+      return [
+        { id: `task-clubes-${Date.now()}`, name: 'Puntaje de Clubes', maxPoints: 2 },
+        { id: `task-asistencia-${Date.now() + 1}`, name: 'Asistencia', maxPoints: 1 },
+        { id: `task-puntualidad-${Date.now() + 2}`, name: 'Puntualidad', maxPoints: 1 },
+      ];
     }
 
     const baseTasks = Array.from({ length: hours }, (_, index) => ({
@@ -103,15 +107,6 @@ const PlanillaMensual = () => {
       maxPoints: 2,
     }));
 
-    // Add special institutional tasks only for coordinators and in final months of each stage
-    const { currentRole } = useAppStore.getState();
-    if (currentRole === 'coordinador' && (targetMonth === 5 || targetMonth === 11)) {
-      baseTasks.push(
-        { id: `task-clubes-${Math.random().toString(36).substr(2, 5)}`, name: 'Clubes', maxPoints: 2 },
-        { id: `task-asistencia-${Math.random().toString(36).substr(2, 5)}`, name: 'Asistencia', maxPoints: 1 },
-        { id: `task-puntualidad-${Math.random().toString(36).substr(2, 5)}`, name: 'Puntualidad', maxPoints: 1 }
-      );
-    }
     return baseTasks;
   }, []);
 
@@ -195,11 +190,20 @@ const PlanillaMensual = () => {
   };
 
   const existingPlanilla = planillas.find(
-    planilla => planilla.subjectId === selectedSubjectId &&
-               planilla.month === month &&
-               planilla.year === CURRENT_YEAR &&
-               planilla.teacherId === TEACHER_ID &&
-               (planilla.planillaType === selectedPlanillaType || (!planilla.planillaType && selectedPlanillaType === 'proceso'))
+    planilla => {
+      const matchMonth = planilla.month === month;
+      const matchYear = planilla.year === CURRENT_YEAR;
+      if (selectedPlanillaType === 'institucional') {
+        return planilla.planillaType === 'institucional' &&
+               planilla.courseId === subject?.courseId &&
+               matchMonth &&
+               matchYear;
+      }
+      return planilla.subjectId === selectedSubjectId &&
+             matchMonth &&
+             matchYear &&
+             (planilla.planillaType === selectedPlanillaType || (!planilla.planillaType && selectedPlanillaType === 'proceso'));
+    }
   );
 
   const students = selectedCourse
@@ -317,6 +321,7 @@ const PlanillaMensual = () => {
 
     setSubmitting(true);
     const planillaScores = buildPlanillaScores();
+    const isInst = selectedPlanillaType === 'institucional';
 
     try {
       if (existingPlanilla) {
@@ -333,8 +338,8 @@ const PlanillaMensual = () => {
         });
       } else {
         await savePlanilla({
-          subjectId: subject.subjectId,
-          subjectName: subject.name,
+          subjectId: isInst ? 'institucional' : subject.subjectId,
+          subjectName: isInst ? 'Institucional' : subject.name,
           courseId: subject.courseId,
           courseName: subject.courseName,
           teacherId: TEACHER_ID,
@@ -351,7 +356,7 @@ const PlanillaMensual = () => {
         });
       }
 
-      toast({ title: 'Planilla guardada', description: `Borrador de ${subject.name} - ${monthName} guardado` });
+      toast({ title: 'Planilla guardada', description: `Borrador de ${isInst ? 'Institucional' : subject.name} - ${monthName} guardado` });
     } catch {
       toast({ title: 'Error', description: 'No se pudo guardar la planilla', variant: 'destructive' });
     } finally {
@@ -372,6 +377,7 @@ const PlanillaMensual = () => {
 
     setSubmitting(true);
     const planillaScores = buildPlanillaScores();
+    const isInst = selectedPlanillaType === 'institucional';
 
     try {
       if (existingPlanilla) {
@@ -382,15 +388,17 @@ const PlanillaMensual = () => {
           courseName: subject.courseName,
           coordinatorId: courseCoordinatorId,
           planillaType: selectedPlanillaType,
-          status: 'enviado',
+          status: isInst ? 'aprobado' : 'enviado',
           submittedDate: new Date().toISOString(),
+          approvedDate: isInst ? new Date().toISOString() : undefined,
+          approvedBy: isInst ? (user?.name || 'Coordinador') : undefined,
           rejectionReason: undefined,
           editRequestStatus: 'none',
         });
       } else {
         await savePlanilla({
-          subjectId: subject.subjectId,
-          subjectName: subject.name,
+          subjectId: isInst ? 'institucional' : subject.subjectId,
+          subjectName: isInst ? 'Institucional' : subject.name,
           courseId: subject.courseId,
           courseName: subject.courseName,
           teacherId: TEACHER_ID,
@@ -403,12 +411,17 @@ const PlanillaMensual = () => {
           planillaType: selectedPlanillaType,
           tasks,
           scores: planillaScores,
-          status: 'enviado',
+          status: isInst ? 'aprobado' : 'enviado',
           submittedDate: new Date().toISOString(),
+          approvedDate: isInst ? new Date().toISOString() : undefined,
+          approvedBy: isInst ? (user?.name || 'Coordinador') : undefined,
         });
       }
 
-      toast({ title: 'Planilla enviada', description: 'Planilla enviada al Coordinador para aprobación' });
+      toast({
+        title: isInst ? 'Planilla publicada' : 'Planilla enviada',
+        description: isInst ? 'La planilla institucional ha sido publicada directamente' : 'Planilla enviada al Coordinador para aprobación'
+      });
     } catch {
       toast({ title: 'Error', description: 'No se pudo enviar la planilla', variant: 'destructive' });
     } finally {
@@ -526,11 +539,26 @@ const PlanillaMensual = () => {
                   <SelectItem value="proceso">Tareas (Proceso)</SelectItem>
                   <SelectItem value="tp">Trabajo Práctico</SelectItem>
                   <SelectItem value="examen">Examen</SelectItem>
-                  <SelectItem value="institucional">Institucional</SelectItem>
+                  {currentRole === 'coordinador' && (
+                    <SelectItem value="institucional">Institucional</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
           </div>
+
+          {selectedPlanillaType === 'institucional' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 flex items-start gap-2">
+              <span className="text-lg">ℹ️</span>
+              <div>
+                <p className="font-semibold">Planilla Institucional — Una vez por etapa</p>
+                <p className="text-xs mt-0.5">
+                  Registrá <strong>Puntaje de Clubes</strong>, <strong>Asistencia</strong> y <strong>Puntualidad</strong>.
+                  Solo se carga al final de cada etapa: <strong>Mayo</strong> (1ra etapa) o <strong>Noviembre</strong> (2da etapa).
+                </p>
+              </div>
+            </div>
+          )}
 
           {existingPlanilla && (
             <div className="bg-accent/50 border border-border rounded-lg p-3 text-sm flex items-center justify-between">
