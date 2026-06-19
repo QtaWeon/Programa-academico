@@ -195,7 +195,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
         <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center gap-3 no-print lg:hidden">
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
@@ -204,7 +204,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {roleLabels[currentRole]}
           </h1>
         </header>
-        <main className="flex-1 p-4 md:p-6 animate-fade-in">
+        <main className="flex-1 p-4 md:p-6 animate-fade-in min-w-0">
           {children}
         </main>
       </div>

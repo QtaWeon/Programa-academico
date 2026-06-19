@@ -1,6 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Layers, GraduationCap, Clock, Award } from 'lucide-react';
+import { Award, BookOpen, Clock, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
@@ -22,39 +20,84 @@ const AlumnoDashboard = () => {
     .filter(p => p.status === 'aprobado' && p.approvedDate && new Date(p.approvedDate) >= treintaDiasAtras)
     .filter(p => p.scores.some(s => s.studentId === user?.id))
     .sort((a, b) => new Date(b.approvedDate!).getTime() - new Date(a.approvedDate!).getTime())
-    .slice(0, 5); // Mostrar últimas 5
+    .slice(0, 5);
+
+  const totalPlanillas = planillas.filter(
+    p => p.status === 'aprobado' && p.scores.some(s => s.studentId === user?.id)
+  ).length;
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 mb-6">
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-muted-foreground mb-1">Planillas Publicadas (Este mes)</h3>
-            <p className="text-3xl font-bold text-primary">{misUltimasPlanillas.length}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Planillas</h3>
-            <p className="text-3xl font-bold text-primary">
-              {planillas.filter(p => p.status === 'aprobado' && p.scores.some(s => s.studentId === user?.id)).length}
-            </p>
-          </CardContent>
-        </Card>
+    <div className="space-y-5">
+      {/* Saludo */}
+      <div>
+        <h2 className="text-xl font-bold text-foreground leading-tight">
+          Hola, {user?.name?.split(' ')[0] ?? 'Alumno'} 👋
+        </h2>
+        <p className="text-sm text-muted-foreground mt-0.5">Bienvenido a tu panel de notas</p>
       </div>
 
-      <div className="space-y-4">
-        <h3 className="font-bold flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Últimas notas publicadas (30 días)</h3>
+      {/* Stats - siempre en 2 columnas */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <p className="text-xs text-muted-foreground font-medium">Últimos 30 días</p>
+          <p className="text-3xl font-bold text-primary mt-1">{misUltimasPlanillas.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">Planillas nuevas</p>
+        </div>
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <p className="text-xs text-muted-foreground font-medium">Total histórico</p>
+          <p className="text-3xl font-bold text-primary mt-1">{totalPlanillas}</p>
+          <p className="text-xs text-muted-foreground mt-1">Planillas totales</p>
+        </div>
+      </div>
+
+      {/* Accesos rápidos */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          to="/alumno/planillas?tab=todas"
+          className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors"
+        >
+          <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+            <Layers className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold leading-tight">Mis Planillas</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Ver todas</p>
+          </div>
+        </Link>
+        <Link
+          to="/alumno/promedio"
+          className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors"
+        >
+          <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+            <BookOpen className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold leading-tight">Promedio</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Final anual</p>
+          </div>
+        </Link>
+      </div>
+
+      {/* Últimas notas */}
+      <div className="space-y-3">
+        <h3 className="font-bold text-sm flex items-center gap-2 text-foreground">
+          <Clock className="h-4 w-4 text-primary" />
+          Notas recientes (últimos 30 días)
+        </h3>
+
         {loading ? (
-          <p className="text-sm text-muted-foreground">Cargando...</p>
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-16 rounded-xl bg-muted/50 animate-pulse" />
+            ))}
+          </div>
         ) : misUltimasPlanillas.length === 0 ? (
-          <Card className="bg-muted/50">
-            <CardContent className="p-6 text-center text-muted-foreground">
-              No hay notas nuevas publicadas en los últimos 30 días.
-            </CardContent>
-          </Card>
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
+            <Clock className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">No hay notas publicadas en los últimos 30 días.</p>
+          </div>
         ) : (
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-2">
             {misUltimasPlanillas.map(planilla => {
               const miPuntaje = planilla.scores.find(s => s.studentId === user?.id);
               const totalMio = planilla.tasks.reduce((sum, task) => sum + (miPuntaje?.scores[task.id] || 0), 0);
@@ -62,19 +105,24 @@ const AlumnoDashboard = () => {
               const mesName = ALL_MONTHS.find(m => m.month === planilla.month)?.name;
 
               return (
-                <Card key={planilla.id} className="border-l-4 border-l-primary hover:bg-muted/30 transition-colors">
-                  <CardContent className="p-4 flex items-center justify-between gap-3">
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm leading-tight">{planilla.subjectName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{mesName} {planilla.year}</p>
+                <div
+                  key={planilla.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="p-1.5 rounded-lg bg-primary/10 shrink-0">
+                      <Award className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-xl font-bold text-primary flex items-center gap-1 justify-end whitespace-nowrap">
-                        <Award className="h-4 w-4 shrink-0" /> {totalMio} <span className="text-xs text-muted-foreground font-normal">/ {maxTotal} pts</span>
-                      </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm leading-tight truncate">{planilla.subjectName}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{mesName} {planilla.year}</p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <span className="text-lg font-bold text-primary">{totalMio}</span>
+                    <span className="text-xs text-muted-foreground font-normal whitespace-nowrap"> / {maxTotal} pts</span>
+                  </div>
+                </div>
               );
             })}
           </div>

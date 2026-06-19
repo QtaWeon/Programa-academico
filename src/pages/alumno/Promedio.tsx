@@ -101,19 +101,19 @@ const EtapaTable = ({
             <tr className="border-b border-border bg-muted/50">
               <th className="text-left py-2 px-2 sm:px-4 border-r border-border font-semibold min-w-[150px] sm:min-w-[200px]">Materia</th>
               {etapaMonths.map(month => (
-                <th key={month} className="text-center py-2 px-1 border-r border-border font-medium w-10 sm:w-14">
+                <th key={month} className="text-center py-2 px-2 border-r border-border font-medium min-w-[60px] sm:min-w-[70px] whitespace-nowrap">
                   {['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][month]}
                 </th>
               ))}
-              <th className="text-center py-2 px-1 border-r border-border font-medium w-14 sm:w-16 bg-yellow-50/50">Parcial</th>
-              <th className="text-center py-2 px-1 border-r border-border font-medium w-14 sm:w-16 bg-red-50/50">Final</th>
+              <th className="text-center py-2 px-2 border-r border-border font-medium min-w-[70px] sm:min-w-[80px] whitespace-nowrap bg-yellow-50/50">Parcial</th>
+              <th className="text-center py-2 px-2 border-r border-border font-medium min-w-[70px] sm:min-w-[80px] whitespace-nowrap bg-red-50/50">Final</th>
               {instNames.map(instName => (
-                <th key={instName} className="text-center py-2 px-1 border-r border-border font-medium w-14 sm:w-16 bg-blue-50/50">
+                <th key={instName} className="text-center py-2 px-2 border-r border-border font-medium min-w-[70px] sm:min-w-[80px] whitespace-nowrap bg-blue-50/50">
                   {instName}
                 </th>
               ))}
-              <th className="text-center py-2 px-2 border-r border-border font-bold bg-primary/5 w-16 sm:w-20">Total</th>
-              <th className="text-center py-2 px-2 font-bold bg-primary/10 w-14 sm:w-16">Nota</th>
+              <th className="text-center py-2 px-2 border-r border-border font-bold bg-primary/5 min-w-[70px] sm:min-w-[80px] whitespace-nowrap">Total</th>
+              <th className="text-center py-2 px-2 font-bold bg-primary/10 min-w-[70px] sm:min-w-[80px] whitespace-nowrap">Nota</th>
             </tr>
           </thead>
           <tbody>
@@ -131,9 +131,9 @@ const EtapaTable = ({
                     return (
                       <td key={month} className="text-center py-2 px-0.5 sm:px-1 border-r border-border">
                         {d ? (
-                          <div className="flex flex-col sm:block">
+                          <div className="flex items-baseline justify-center gap-0.5 whitespace-nowrap">
                             <span className="font-semibold">{d.studentTotal}</span>
-                            <span className="text-[8px] sm:text-[9px] text-muted-foreground">/{d.maxTotal}</span>
+                            <span className="text-[9px] sm:text-[10px] text-muted-foreground">/{d.maxTotal}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground/30">-</span>
@@ -143,9 +143,9 @@ const EtapaTable = ({
                   })}
                   <td className="text-center py-2 px-0.5 sm:px-1 border-r border-border bg-yellow-50/20">
                     {subj.parcial.maxTotal > 0 ? (
-                      <div className="flex flex-col sm:block">
+                      <div className="flex items-baseline justify-center gap-0.5 whitespace-nowrap">
                         <span className="font-semibold text-yellow-700">{subj.parcial.studentTotal}</span>
-                        <span className="text-[8px] sm:text-[9px] text-yellow-600/70">/{subj.parcial.maxTotal}</span>
+                        <span className="text-[9px] sm:text-[10px] text-yellow-600/70">/{subj.parcial.maxTotal}</span>
                       </div>
                     ) : (
                       <span className="text-muted-foreground/30">-</span>
@@ -153,9 +153,9 @@ const EtapaTable = ({
                   </td>
                   <td className="text-center py-2 px-0.5 sm:px-1 border-r border-border bg-red-50/20">
                     {subj.examen.maxTotal > 0 ? (
-                      <div className="flex flex-col sm:block">
+                      <div className="flex items-baseline justify-center gap-0.5 whitespace-nowrap">
                         <span className="font-semibold text-red-700">{subj.examen.studentTotal}</span>
-                        <span className="text-[8px] sm:text-[9px] text-red-600/70">/{subj.examen.maxTotal}</span>
+                        <span className="text-[9px] sm:text-[10px] text-red-600/70">/{subj.examen.maxTotal}</span>
                       </div>
                     ) : (
                       <span className="text-muted-foreground/30">-</span>
@@ -165,16 +165,18 @@ const EtapaTable = ({
                     const data = instColumns[instName];
                     return (
                       <td key={instName} className="text-center py-2 px-0.5 sm:px-1 border-r border-border bg-blue-50/20">
-                        <div className="flex flex-col sm:block">
+                        <div className="flex items-baseline justify-center gap-0.5 whitespace-nowrap">
                           <span className="font-semibold text-blue-700">{data.student}</span>
-                          <span className="text-[8px] sm:text-[9px] text-blue-500/70">/{data.max}</span>
+                          <span className="text-[9px] sm:text-[10px] text-blue-500/70">/{data.max}</span>
                         </div>
                       </td>
                     );
                   })}
                   <td className="text-center py-2 px-2 border-r border-border bg-primary/5">
-                    <div className="font-bold">{subj.totalStudentPoints}</div>
-                    <div className="text-[9px] sm:text-[10px] text-muted-foreground">/{subj.totalMaxPoints}</div>
+                    <div className="flex items-baseline justify-center gap-0.5 whitespace-nowrap">
+                      <span className="font-bold">{subj.totalStudentPoints}</span>
+                      <span className="text-[9px] sm:text-[10px] text-muted-foreground">/{subj.totalMaxPoints}</span>
+                    </div>
                   </td>
                   <td className="text-center py-2 px-1 sm:px-2 font-bold bg-primary/10 p-0">
                     {subj.totalMaxPoints > 0 ? (
