@@ -63,14 +63,14 @@ const AlumnoDashboard = () => {
 
               return (
                 <Card key={planilla.id} className="border-l-4 border-l-primary hover:bg-muted/30 transition-colors">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-sm">{planilla.subjectName}</p>
-                      <p className="text-xs text-muted-foreground">{mesName} {planilla.year}</p>
+                  <CardContent className="p-4 flex items-center justify-between gap-3">
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm leading-tight">{planilla.subjectName}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{mesName} {planilla.year}</p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-xl font-bold text-primary flex items-center gap-1 justify-end">
-                        <Award className="h-4 w-4" /> {totalMio} <span className="text-xs text-muted-foreground font-normal">/ {maxTotal} pts</span>
+                    <div className="text-right shrink-0">
+                      <div className="text-xl font-bold text-primary flex items-center gap-1 justify-end whitespace-nowrap">
+                        <Award className="h-4 w-4 shrink-0" /> {totalMio} <span className="text-xs text-muted-foreground font-normal">/ {maxTotal} pts</span>
                       </div>
                     </div>
                   </CardContent>

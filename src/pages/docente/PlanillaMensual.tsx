@@ -144,7 +144,7 @@ const PlanillaMensual = () => {
     }
     if (type === 'institucional') {
       return [
-        { id: `task-clubes-${Date.now()}`, name: 'Puntaje de Clubes', maxPoints: 2 },
+        { id: `task-clubes-${Date.now()}`, name: 'Clubes', maxPoints: 2 },
         { id: `task-asistencia-${Date.now() + 1}`, name: 'Asistencia', maxPoints: 1 },
         { id: `task-puntualidad-${Date.now() + 2}`, name: 'Puntualidad', maxPoints: 1 },
       ];
@@ -308,7 +308,7 @@ const PlanillaMensual = () => {
     // Header institucional
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.text('Colegio Politécnico CPCC - Nivel Medio', pageWidth / 2, 36, { align: 'center' });
+    doc.text('Colegio Politécnico Cooperativa Capiatá - Nivel Medio', pageWidth / 2, 36, { align: 'center' });
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
@@ -487,6 +487,27 @@ const PlanillaMensual = () => {
     }
   };
 
+  const handleForceEnableEdit = async () => {
+    if (!existingPlanilla || submitting) return;
+    setSubmitting(true);
+    try {
+      await updatePlanilla(existingPlanilla.id, {
+        editRequestStatus: 'approved'
+      });
+      toast({
+        title: 'Edición habilitada',
+        description: 'Se ha habilitado la edición para esta planilla.'
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo habilitar la edición.',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
   const handleCloseEdit = async () => {
     if (!existingPlanilla || submitting) return;
     setSubmitting(true);
@@ -556,7 +577,7 @@ const PlanillaMensual = () => {
         <Layers className="h-6 w-6 text-primary" />
         <div>
           <h2 className="text-2xl font-bold">Planilla de Informe Mensual</h2>
-          <p className="text-sm text-muted-foreground">Colegio Politécnico CPCC - Nivel Medio</p>
+          <p className="text-sm text-muted-foreground">Colegio Politécnico Cooperativa Capiatá - Nivel Medio</p>
         </div>
       </div>
 
@@ -609,9 +630,6 @@ const PlanillaMensual = () => {
                       <SelectItem value="examen">
                         {hasParcialInEtapa ? 'Examen Final (18pts — con parcial)' : 'Examen Final (30pts — sin parcial)'}
                       </SelectItem>
-                      {currentRole === 'coordinador' && (
-                        <SelectItem value="institucional">Institucional</SelectItem>
-                      )}
                     </>
                   )}
                 </SelectContent>
@@ -653,7 +671,7 @@ const PlanillaMensual = () => {
                 <span className="text-sm font-medium">Tareas del mes:</span>
                 {tasks.map(task => {
                   const isSpecial = task.id.startsWith('task-clubes') || task.id.startsWith('task-asistencia') || task.id.startsWith('task-puntualidad');
-                  const isFixedType = selectedPlanillaType === 'institucional' || selectedPlanillaType === 'parcial' || selectedPlanillaType === 'examen';
+                  const isFixedType = selectedPlanillaType === 'parcial' || selectedPlanillaType === 'examen';
                   return (
                     <Badge key={task.id} variant="outline" className="gap-1 pr-1">
                       {task.name} ({task.maxPoints}pts)
@@ -673,13 +691,12 @@ const PlanillaMensual = () => {
                 {selectedPlanillaType === 'proceso' || selectedPlanillaType === 'tp' ? (
                   <div className="flex flex-wrap gap-2 mt-2">
                     <Button variant="outline" size="sm" onClick={addTask} disabled={!canEdit}>Agregar Tarea</Button>
-                    {currentRole === 'coordinador' && (
-                      <>
-                        <Button variant="outline" size="sm" onClick={() => addSpecialTask('Trabajo Práctico', 5)} disabled={!canEdit}>Añadir T.P.</Button>
-                        <Button variant="outline" size="sm" onClick={() => addSpecialTask('Examen Parcial', 12)} disabled={!canEdit}>Añadir Ex. Parcial</Button>
-                        <Button variant="outline" size="sm" onClick={() => addSpecialTask('Examen', 30)} disabled={!canEdit}>Añadir Examen</Button>
-                      </>
-                    )}
+                  </div>
+                ) : null}
+                {selectedPlanillaType === 'institucional' ? (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Button variant="outline" size="sm" onClick={() => addSpecialTask('Anteproyecto', 8)} disabled={!canEdit}>Añadir Anteproyecto</Button>
+                    <Button variant="outline" size="sm" onClick={() => addSpecialTask('Proyecto Final', 20)} disabled={!canEdit}>Añadir Proyecto Final</Button>
                   </div>
                 ) : null}
               </div>              {students.length === 0 ? (
@@ -804,9 +821,15 @@ const PlanillaMensual = () => {
                       </Button>
                     )}
                     {isLocked && !hasPendingRequest && existingPlanilla?.editRequestStatus !== 'approved' && (
-                      <Button variant="secondary" onClick={() => setRequestDialogOpen(true)}>
-                        <AlertTriangle className="h-4 w-4 mr-2" /> Pedir permiso para editar
-                      </Button>
+                      currentRole === 'coordinador' ? (
+                        <Button variant="secondary" onClick={handleForceEnableEdit} disabled={submitting || loading}>
+                          <AlertTriangle className="h-4 w-4 mr-2" /> Habilitar edición
+                        </Button>
+                      ) : (
+                        <Button variant="secondary" onClick={() => setRequestDialogOpen(true)}>
+                          <AlertTriangle className="h-4 w-4 mr-2" /> Pedir permiso para editar
+                        </Button>
+                      )
                     )}
                     {hasPendingRequest && (
                       <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 py-2 px-4">

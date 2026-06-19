@@ -164,12 +164,12 @@ const MisPlanillas = () => {
           <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 mb-3">
             {tasks.map(task => (
               <div key={task.id} className="text-center border rounded-lg p-1.5 sm:p-2 min-w-0 bg-background/60 flex flex-col justify-between h-14">
-                <div className="text-[10px] text-muted-foreground truncate px-1" title={task.name}>
-                  {task.name}
+                <div className="text-[10px] text-muted-foreground truncate px-1" title={task.name === 'Puntaje de Clubes' ? 'Clubes' : task.name}>
+                  {task.name === 'Puntaje de Clubes' ? 'Clubes' : task.name}
                 </div>
-                <div>
-                  <div className="font-bold text-xs sm:text-sm">{myScores.scores[task.id] || 0}</div>
-                  <div className="text-[9px] text-muted-foreground">/{task.maxPoints}</div>
+                <div className="flex items-baseline justify-center gap-0.5">
+                  <span className="font-bold text-xs sm:text-sm">{myScores.scores[task.id] || 0}</span>
+                  <span className="text-[10px] text-muted-foreground">/ {task.maxPoints}</span>
                 </div>
               </div>
             ))}

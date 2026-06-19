@@ -52,7 +52,7 @@ const Login = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground mb-4">
             <IdCard className="h-8 w-8" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Colegio Politécnico CPCC</h1>
+          <h1 className="text-3xl font-bold text-foreground">Colegio Politécnico Cooperativa Capiatá</h1>
           <p className="text-muted-foreground mt-1">Sistema de Gestión de Planillas Académicas</p>
         </div>
 
