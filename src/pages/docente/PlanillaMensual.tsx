@@ -132,7 +132,7 @@ const PlanillaMensual = () => {
 
   const generateDefaultTasks = useCallback((hours: number, targetMonth: number, type: 'proceso' | 'tp' | 'parcial' | 'examen' | 'institucional', hasParcial?: boolean): TaskRow[] => {
     if (type === 'tp') {
-      return [{ id: `task-tp-${Date.now()}`, name: 'Trabajo Práctico', maxPoints: 10 }];
+      return [];
     }
     if (type === 'parcial') {
       return [{ id: `task-parcial-${Date.now()}`, name: 'Examen Parcial', maxPoints: 12 }];
@@ -197,7 +197,29 @@ const PlanillaMensual = () => {
     tasks.reduce((sum, task) => sum + getScore(studentId, task.id), 0);
 
   const addTask = () => {
-    setTasks(prev => [...prev, { id: `task-${Date.now()}`, name: `Tarea ${prev.length + 1}`, maxPoints: 2 }]);
+    if (selectedPlanillaType === 'tp') {
+      setTasks(prev => [
+        ...prev,
+        {
+          id: `task-tp-${Date.now()}`,
+          name: prev.length === 0 ? 'Trabajo Práctico' : `Trabajo Práctico ${prev.length + 1}`,
+          maxPoints: 10,
+        },
+      ]);
+    } else {
+      setTasks(prev => [...prev, { id: `task-${Date.now()}`, name: `Tarea ${prev.length + 1}`, maxPoints: 2 }]);
+    }
+  };
+
+  const addOtrosTask = () => {
+    setTasks(prev => [
+      ...prev,
+      {
+        id: `task-otros-${Date.now()}`,
+        name: prev.some(t => t.name === 'Otros') ? `Otros ${prev.filter(t => t.name.startsWith('Otros')).length + 1}` : 'Otros',
+        maxPoints: 2,
+      },
+    ]);
   };
 
   const addSpecialTask = (name: string, maxPoints: number) => {
@@ -660,7 +682,9 @@ const PlanillaMensual = () => {
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-sm">
                 <strong>{subject.name}</strong> - {subject.grade}
                 <Badge variant="secondary" className="ml-2">TP Máximo: {totalMaxPoints} pts</Badge>
-                <span className="text-muted-foreground ml-2">(cada tarea = 2 pts)</span>
+                <span className="text-muted-foreground ml-2">
+                  {selectedPlanillaType === 'tp' ? '(cada TP = 10 pts)' : selectedPlanillaType === 'proceso' ? '(cada tarea = 2 pts)' : ''}
+                </span>
                 <span className="text-muted-foreground ml-2">- {students.length} alumnos</span>
                 {!courseCoordinatorId && (
                   <span className="text-destructive ml-2">- Este curso no tiene coordinador asignado</span>
@@ -680,7 +704,7 @@ const PlanillaMensual = () => {
                           <Edit2 className="h-3 w-3" />
                         </button>
                       )}
-                      {!isSpecial && !isFixedType && tasks.length > 1 && canEdit && (
+                      {!isSpecial && !isFixedType && (selectedPlanillaType === 'tp' || tasks.length > 1) && canEdit && (
                         <button onClick={() => removeTask(task.id)} className="hover:text-destructive">
                           <Trash2 className="h-3 w-3" />
                         </button>
@@ -688,9 +712,14 @@ const PlanillaMensual = () => {
                     </Badge>
                   );
                 })}
-                {selectedPlanillaType === 'proceso' || selectedPlanillaType === 'tp' ? (
+                {selectedPlanillaType === 'proceso' ? (
                   <div className="flex flex-wrap gap-2 mt-2">
                     <Button variant="outline" size="sm" onClick={addTask} disabled={!canEdit}>Agregar Tarea</Button>
+                    <Button variant="outline" size="sm" onClick={addOtrosTask} disabled={!canEdit}>Otros</Button>
+                  </div>
+                ) : selectedPlanillaType === 'tp' ? (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Button variant="outline" size="sm" onClick={addTask} disabled={!canEdit}>Agregar Trabajo Práctico</Button>
                   </div>
                 ) : null}
                 {selectedPlanillaType === 'institucional' ? (
