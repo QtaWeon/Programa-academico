@@ -1,5 +1,4 @@
-import { Award, BookOpen, Clock, Layers } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Award, Clock } from 'lucide-react';
 import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { usePlanillasStore } from '@/lib/planillas-store';
@@ -48,34 +47,6 @@ const AlumnoDashboard = () => {
           <p className="text-3xl font-bold text-primary mt-1">{totalPlanillas}</p>
           <p className="text-xs text-muted-foreground mt-1">Planillas totales</p>
         </div>
-      </div>
-
-      {/* Accesos rápidos */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link
-          to="/alumno/planillas?tab=todas"
-          className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors"
-        >
-          <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-            <Layers className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold leading-tight">Mis Planillas</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Ver todas</p>
-          </div>
-        </Link>
-        <Link
-          to="/alumno/promedio"
-          className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors"
-        >
-          <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-            <BookOpen className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold leading-tight">Promedio</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Final anual</p>
-          </div>
-        </Link>
       </div>
 
       {/* Últimas notas */}
